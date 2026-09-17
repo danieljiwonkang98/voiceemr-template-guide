@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>템플릿 빈칸 안내 · VoiceEMR</title>
+  <meta name="description" content="템플릿의 [1:N], {1:n}, 선택 표시를 말로 채우는 방법. 문자에서 깨지는 기호 없이 바로 보세요.">
+  <meta property="og:title" content="템플릿 빈칸, 이렇게 말하면 됩니다">
+  <meta property="og:description" content="짧은 값, 문장, 선택지를 말로 채우는 방법입니다. 문자에서 �로 보이던 기호도 여기에서 확인할 수 있습니다.">
+  <meta property="og:type" content="article">
+  <meta name="theme-color" content="#08717b">
+  <style>
+    :root {
+      --ink: #19353d;
+      --muted: #526970;
+      --teal: #08717b;
+      --teal-deep: #065860;
+      --paper: #ffffff;
+      --wash: #edf5f4;
+      --page: #e8eeee;
+      --line: #d1dfe1;
+      --slot: #075a9b;
+      --slot-bg: #e4effa;
+      --say: #08717b;
+      --shadow: 0 10px 30px rgba(25, 53, 61, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font: 16px/1.65 "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      word-break: keep-all;
+    }
+    a { color: var(--teal-deep); }
+    .wrap {
+      width: min(760px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 80px;
+    }
+    header {
+      background: #19353d;
+      color: white;
+      padding: 28px 0 26px;
+    }
+    header .wrap { padding-bottom: 0; }
+    .brand {
+      font-size: 12px;
+      letter-spacing: 1.4px;
+      font-weight: 700;
+      color: #8fd0d6;
+      margin: 0 0 10px;
+    }
+    h1 {
+      font-size: clamp(28px, 7vw, 40px);
+      line-height: 1.25;
+      letter-spacing: -1.2px;
+      margin: 0 0 10px;
+    }
+    .lead {
+      margin: 0;
+      color: #d7e6e8;
+      font-size: 16px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: white;
+      color: var(--teal-deep);
+    }
+    .btn.ghost {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255,255,255,.35);
+    }
+    .notice {
+      margin: 22px 0 0;
+      background: #fff7e8;
+      border: 1px solid #f0d7a0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #5c4a1d;
+    }
+    .notice b { color: #3f320f; }
+    .broken {
+      display: inline-block;
+      min-width: 1.4em;
+      text-align: center;
+      background: #f3d0d0;
+      color: #8a1f1f;
+      border-radius: 6px;
+      padding: 0 6px;
+      font-weight: 800;
+    }
+    h2 {
+      font-size: 22px;
+      letter-spacing: -.6px;
+      margin: 36px 0 12px;
+    }
+    h3 { margin: 0 0 6px; font-size: 18px; }
+    p { margin: 8px 0; }
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .fake-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 4px 12px;
+      border: 1px solid #b3b3b3;
+      border-radius: 11px;
+      background: #f8f8f8;
+      color: #1a1a1a;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .meaning {
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .one-line {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 10px;
+      align-items: center;
+      background: var(--wash);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-top: 12px;
+      font-size: 15px;
+    }
+    .one-line b { color: var(--teal-deep); }
+    .template, .result, .say-box {
+      background: var(--wash);
+      border-radius: 14px;
+      padding: 16px 18px;
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .result { background: #f3f7f7; }
+    .label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: .3px;
+      margin-bottom: 8px;
+    }
+    .slot {
+      color: var(--slot);
+      background: var(--slot-bg);
+      padding: 0 5px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+    .choice {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      color: #6b3fa0;
+      background: #f3e9fb;
+      padding: 0 4px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+    .choice .mark {
+      font-weight: 900;
+      opacity: .75;
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      margin: 22px 0;
+    }
+    .num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+    .say {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--say);
+      margin: 8px 0;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+    .arrow {
+      align-self: center;
+      color: var(--teal);
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .script {
+      background: #19353d;
+      color: white;
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .script .say { color: #8fd0d6; }
+    .script ol {
+      margin: 8px 0 0;
+      padding-left: 22px;
+    }
+    .script li { margin: 8px 0; }
+    .remember {
+      display: grid;
+      gap: 10px;
+    }
+    .remember div {
+      background: white;
+      border-left: 4px solid var(--teal);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    footer {
+      margin-top: 36px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .copied { background: #d7f3e6 !important; color: #0c525c !important; }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); justify-self: center; }
+      .one-line { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p class="brand">VOICEEMR · 템플릿 안내</p>
+      <h1>템플릿 빈칸,<br>이렇게 말하면 됩니다</h1>
+      <p class="lead">문자에서 기호가 깨져도, 이 페이지에서는 버튼과 말하기 예시가 그대로 보입니다.</p>
+      <div class="actions">
+        <button class="btn" id="copyLink" type="button">이 링크 복사하기</button>
+        <a class="btn ghost" href="#example">예시부터 보기</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="notice">
+      <b>� 이 이상한 기호가 보이셨다면</b><br>
+      앱의 선택 표시는 겹화살표입니다. 카카오톡이나 문자에서는 이 기호를 못 읽어서
+      <span class="broken">�</span> 로 바뀌는 경우가 많습니다.
+      아래처럼 <span class="choice"><span class="mark">&lt;&lt;</span>Rt<span class="mark">&gt;&gt;</span></span>
+      또는 앱 버튼 <span class="fake-btn">≪word≫</span> 를 생각하시면 됩니다.
+    </div>
+
+    <h2>버튼을 누르면 무엇이 생기나요?</h2>
+    <div class="cards">
+      <article class="card">
+        <span class="fake-btn">[1:N]</span>
+        <h3>문장 빈칸</h3>
+        <p class="meaning">소견처럼 문장 전체를 말할 자리입니다. 버튼을 누를 때마다 <span class="slot">[1:]</span>, <span class="slot">[2:]</span> 번호가 생깁니다. 영어로 말하면 첫 글자가 대문자가 됩니다.</p>
+        <div class="one-line"><b>한 줄 정리</b><span>[ ] = 문장을 넣는 칸</span></div>
+      </article>
+      <article class="card">
+        <span class="fake-btn">{1:n}</span>
+        <h3>짧은 값 빈칸</h3>
+        <p class="meaning">크기, 숫자, 한 단어처럼 문장 안에 짧은 값만 넣을 자리입니다. 버튼을 누르면 <span class="slot">{1:}</span>, <span class="slot">{2:}</span> 가 생깁니다.</p>
+        <div class="one-line"><b>한 줄 정리</b><span>{ } = 짧은 값을 넣는 칸</span></div>
+      </article>
+      <article class="card">
+        <span class="fake-btn">≪word≫</span>
+        <h3>하나만 고르는 선택지</h3>
+        <p class="meaning">여러 보기 중 하나만 남길 때 씁니다. 번호는 없습니다. 버튼을 누르면 빈 선택 표시가 생기고, 그 안에 단어를 넣습니다.</p>
+        <p>예: <span class="choice"><span class="mark">≪</span>Rt<span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span>Lt<span class="mark">≫</span></span></p>
+        <div class="one-line"><b>한 줄 정리</b><span>겹화살표 = 보기 중 하나 고르기</span></div>
+      </article>
+    </div>
+    <p class="meaning"><b>N</b> 과 <b>n</b> 은 “번호”라는 뜻입니다. 클릭할 때마다 1, 2, 3으로 늘어납니다. 칸을 옮겼다면 앱의 <b>정렬</b>을 누르면 번호가 다시 맞춰집니다.</p>
+
+    <h2 id="example">연습용 템플릿</h2>
+    <div class="card">
+      <div class="label">이름</div>
+      <p style="margin-top:0"><b>흉부 CT</b></p>
+      <div class="label">내용</div>
+      <div class="template">Size: <span class="slot">{1:}</span> cm
+Side: <span class="choice"><span class="mark">≪</span>Rt<span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span>Lt<span class="mark">≫</span></span>
+FINDINGS:
+<span class="slot">[2:]</span></div>
+    </div>
+
+    <h2>말로 채우는 순서</h2>
+
+    <div class="step">
+      <span class="num">1</span>
+      <div>
+        <h3>템플릿 부르기</h3>
+        <p class="say">“흉부 CT 템플릿”</p>
+        <div class="row">
+          <div>
+            <div class="label">말하면</div>
+            <div class="say-box">흉부 CT 템플릿</div>
+          </div>
+          <div class="arrow">→</div>
+          <div>
+            <div class="label">화면에 나타남</div>
+            <div class="result">Size: {1:} cm
+Side: ≪Rt≫ ≪Lt≫
+FINDINGS:
+[2:]</div>
+          </div>
+        </div>
+        <p class="meaning">아직 빈칸입니다. 이제 하나씩 채웁니다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="num">2</span>
+      <div>
+        <h3>짧은 값 넣기 · {1:}</h3>
+        <p class="say">“1번” 그다음 “이 점 오”</p>
+        <div class="row">
+          <div>
+            <div class="label">말하면</div>
+            <div class="say-box">1번
+이 점 오</div>
+          </div>
+          <div class="arrow">→</div>
+          <div>
+            <div class="label">결과</div>
+            <div class="result">Size: 2.5 cm
+Side: ≪Rt≫ ≪Lt≫
+FINDINGS:
+[2:]</div>
+          </div>
+        </div>
+        <p class="meaning">cm 는 그대로 있고, 숫자만 들어갑니다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="num">3</span>
+      <div>
+        <h3>하나만 고르기 · 선택 표시</h3>
+        <p class="say">“Rt”</p>
+        <div class="row">
+          <div>
+            <div class="label">말하면</div>
+            <div class="say-box">Rt</div>
+          </div>
+          <div class="arrow">→</div>
+          <div>
+            <div class="label">결과</div>
+            <div class="result">Size: 2.5 cm
+Side: Rt
+FINDINGS:
+[2:]</div>
+          </div>
+        </div>
+        <p class="meaning">왼쪽이면 “Lt” 라고 말하면 됩니다. 고르지 않은 쪽은 사라집니다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="num">4</span>
+      <div>
+        <h3>문장 넣기 · [2:]</h3>
+        <p class="say">“2번” 그다음 “no pleural effusion”</p>
+        <div class="row">
+          <div>
+            <div class="label">말하면</div>
+            <div class="say-box">2번
+no pleural effusion</div>
+          </div>
+          <div class="arrow">→</div>
+          <div>
+            <div class="label">결과</div>
+            <div class="result">Size: 2.5 cm
+Side: Rt
+FINDINGS:
+No pleural effusion</div>
+          </div>
+        </div>
+        <p class="meaning">문장용 칸이라, 영어는 첫 글자가 대문자가 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="num">5</span>
+      <div>
+        <h3>끝내기</h3>
+        <p class="say">“템플릿 종료”</p>
+        <p class="meaning">빈칸 표시가 정리되고, 완성된 글만 남습니다.</p>
+        <div class="result">Size: 2.5 cm
+Side: Rt
+FINDINGS:
+No pleural effusion</div>
+      </div>
+    </div>
+
+    <h2>한 번에 이어서 말하기</h2>
+    <div class="script">
+      <div class="label" style="color:#8fd0d6">그대로 따라 말해 보세요</div>
+      <ol>
+        <li><span class="say">흉부 CT 템플릿</span></li>
+        <li><span class="say">1번</span> 이 점 오</li>
+        <li><span class="say">Rt</span></li>
+        <li><span class="say">2번</span> no pleural effusion</li>
+        <li><span class="say">템플릿 종료</span></li>
+      </ol>
+    </div>
+
+    <h2>이것만 기억하세요</h2>
+    <div class="remember">
+      <div><b>{1:}</b> → “1번” 하고 짧은 값만 말하기</div>
+      <div><b>[2:]</b> → “2번” 하고 문장 말하기</div>
+      <div><b>≪Rt≫ ≪Lt≫</b> → 고르고 싶은 단어만 말하기</div>
+    </div>
+
+    <footer>
+      예문은 사용법 연습용입니다. 실제 판독 내용은 직접 작성하세요.<br>
+      이 페이지 링크만 보내시면, 받는 사람은 기호가 깨지지 않은 화면을 볼 수 있습니다.
+    </footer>
+  </main>
+
+  <script>
+    const button = document.getElementById("copyLink");
+    button.addEventListener("click", async () => {
+      const url = window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (error) {
+        window.prompt("이 링크를 복사하세요", url);
+      }
+      button.textContent = "복사했습니다";
+      button.classList.add("copied");
+      window.setTimeout(() => {
+        button.textContent = "이 링크 복사하기";
+        button.classList.remove("copied");
+      }, 1600);
+    });
+  </script>
+</body>
+</html>
