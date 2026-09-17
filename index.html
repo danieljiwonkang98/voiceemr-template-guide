@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>템플릿 빈칸 안내 · VoiceEMR</title>
-  <meta name="description" content="템플릿의 [1:N], {1:n}, 선택 표시를 말로 채우는 방법. 문자에서 깨지는 기호 없이 바로 보세요.">
+  <meta name="description" content="템플릿의 [1:N], {1:n}, ≪선택지≫를 말로 채우는 방법. 번호만 부르면 선택지가 남고, 부르지 않은 선택지는 사라집니다.">
   <meta property="og:title" content="템플릿 빈칸, 이렇게 말하면 됩니다">
   <meta property="og:description" content="짧은 값, 문장, 선택지를 말로 채우는 방법입니다. 문자에서 �로 보이던 기호도 여기에서 확인할 수 있습니다.">
   <meta property="og:type" content="article">
@@ -22,6 +22,8 @@
       --slot: #075a9b;
       --slot-bg: #e4effa;
       --say: #08717b;
+      --picked: #007e39;
+      --picked-bg: #e3f5ea;
       --shadow: 0 10px 30px rgba(25, 53, 61, 0.08);
     }
     * { box-sizing: border-box; }
@@ -85,6 +87,12 @@
       color: white;
       border: 1px solid rgba(255,255,255,.35);
     }
+    .btn.small {
+      padding: 6px 12px;
+      font-size: 14px;
+      background: var(--teal);
+      color: white;
+    }
     .notice {
       margin: 22px 0 0;
       background: #fff7e8;
@@ -94,6 +102,15 @@
       color: #5c4a1d;
     }
     .notice b { color: #3f320f; }
+    .warn {
+      margin: 14px 0 0;
+      background: #fdecec;
+      border: 1px solid #f0b4b4;
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #6b1d1d;
+    }
+    .warn b { color: #4a1010; }
     .broken {
       display: inline-block;
       min-width: 1.4em;
@@ -121,6 +138,13 @@
       border-radius: 16px;
       padding: 18px;
       box-shadow: var(--shadow);
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .fake-btn {
       display: inline-flex;
@@ -160,8 +184,11 @@
       white-space: pre-wrap;
       font-size: 16px;
       line-height: 1.7;
+      font-family: Consolas, "Courier New", "Malgun Gothic", monospace;
     }
     .result { background: #f3f7f7; }
+    .row .result { font-size: 14px; padding: 12px 14px; }
+    .say-box { font-family: inherit; }
     .label {
       font-size: 12px;
       font-weight: 800;
@@ -190,6 +217,25 @@
       font-weight: 900;
       opacity: .75;
     }
+    .picked {
+      color: var(--picked);
+      background: var(--picked-bg);
+      padding: 0 4px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+    .gone {
+      color: #9aa9ad;
+      text-decoration: line-through;
+      text-decoration-color: #c0474a;
+    }
+    .pattern {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .pattern .row { margin-top: 0; }
     .step {
       display: grid;
       grid-template-columns: 36px 1fr;
@@ -238,6 +284,11 @@
       padding-left: 22px;
     }
     .script li { margin: 8px 0; }
+    .script .result {
+      background: rgba(255,255,255,.08);
+      color: white;
+      margin-top: 14px;
+    }
     .remember {
       display: grid;
       gap: 10px;
@@ -248,6 +299,15 @@
       border-radius: 10px;
       padding: 12px 14px;
     }
+    .faq details {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 8px 0;
+    }
+    .faq summary { font-weight: 700; cursor: pointer; }
+    .faq p { margin: 10px 0 0; color: var(--muted); }
     footer {
       margin-top: 36px;
       color: var(--muted);
@@ -266,10 +326,11 @@
     <div class="wrap">
       <p class="brand">VOICEEMR · 템플릿 안내</p>
       <h1>템플릿 빈칸,<br>이렇게 말하면 됩니다</h1>
-      <p class="lead">문자에서 기호가 깨져도, 이 페이지에서는 버튼과 말하기 예시가 그대로 보입니다.</p>
+      <p class="lead">번호만 부르면 됩니다. 부른 번호가 들어 있는 선택지는 남고, 부르지 않은 선택지는 사라집니다.</p>
       <div class="actions">
         <button class="btn" id="copyLink" type="button">이 링크 복사하기</button>
-        <a class="btn ghost" href="#example">예시부터 보기</a>
+        <a class="btn ghost" href="#example">연습 템플릿 보기</a>
+        <a class="btn ghost" href="#steps">말하는 순서 보기</a>
       </div>
     </div>
   </header>
@@ -279,172 +340,319 @@
       <b>� 이 이상한 기호가 보이셨다면</b><br>
       앱의 선택 표시는 겹화살표입니다. 카카오톡이나 문자에서는 이 기호를 못 읽어서
       <span class="broken">�</span> 로 바뀌는 경우가 많습니다.
-      아래처럼 <span class="choice"><span class="mark">≪</span>Rt<span class="mark">≫</span></span>
+      아래처럼 <span class="choice"><span class="mark">≪</span>{1:Rt}<span class="mark">≫</span></span>
       또는 앱 버튼 <span class="fake-btn">≪word≫</span> 를 생각하시면 됩니다.
       문자로 보낼 때는 이 페이지 링크를 보내 주세요.
     </div>
 
-    <h2>버튼을 누르면 무엇이 생기나요?</h2>
+    <h2>세 가지 표시</h2>
     <div class="cards">
       <article class="card">
         <span class="fake-btn">[1:N]</span>
         <h3>문장 빈칸</h3>
         <p class="meaning">소견처럼 문장 전체를 말할 자리입니다. 버튼을 누를 때마다 <span class="slot">[1:]</span>, <span class="slot">[2:]</span> 번호가 생깁니다. 영어로 말하면 첫 글자가 대문자가 됩니다.</p>
-        <div class="one-line"><b>한 줄 정리</b><span>[ ] = 문장을 넣는 칸</span></div>
+        <div class="one-line"><b>말하기</b><span>“1번” 하고 문장을 말합니다</span></div>
       </article>
       <article class="card">
         <span class="fake-btn">{1:n}</span>
         <h3>짧은 값 빈칸</h3>
         <p class="meaning">크기, 숫자, 한 단어처럼 문장 안에 짧은 값만 넣을 자리입니다. 버튼을 누르면 <span class="slot">{1:}</span>, <span class="slot">{2:}</span> 가 생깁니다.</p>
-        <div class="one-line"><b>한 줄 정리</b><span>{ } = 짧은 값을 넣는 칸</span></div>
+        <div class="one-line"><b>말하기</b><span>“1번” 하고 값만 말합니다</span></div>
       </article>
       <article class="card">
         <span class="fake-btn">≪word≫</span>
-        <h3>하나만 고르는 선택지</h3>
-        <p class="meaning">여러 보기 중 하나만 남길 때 씁니다. 번호는 없습니다. 버튼을 누르면 빈 선택 표시가 생기고, 그 안에 단어를 넣습니다.</p>
-        <p>예: <span class="choice"><span class="mark">≪</span>Rt<span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span>Lt<span class="mark">≫</span></span></p>
-        <div class="one-line"><b>한 줄 정리</b><span>겹화살표 = 보기 중 하나 고르기</span></div>
+        <h3>선택지 (있어도 되고 없어도 되는 부분)</h3>
+        <p class="meaning">
+          <span class="choice"><span class="mark">≪</span> <span class="mark">≫</span></span> 로 감싼 부분은 <b>그 안의 번호를 부르면 남고, 부르지 않으면 통째로 사라집니다.</b>
+          그래서 선택지 안에는 꼭 번호 칸 <span class="slot">{n:}</span> 또는 <span class="slot">[n:]</span> 이 하나 있어야 합니다.
+        </p>
+        <p>예: <span class="choice"><span class="mark">≪</span><span class="slot">{1:Rt}</span><span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span><span class="slot">{2:Lt}</span><span class="mark">≫</span></span> → “1번” 이라고만 말하면 <b>Rt</b> 만 남습니다.</p>
+        <div class="one-line"><b>말하기</b><span>남기고 싶은 선택지의 번호를 부릅니다</span></div>
       </article>
     </div>
     <p class="meaning"><b>N</b> 과 <b>n</b> 은 “번호”라는 뜻입니다. 클릭할 때마다 1, 2, 3으로 늘어납니다. 칸을 옮겼다면 앱의 <b>정렬</b>을 누르면 번호가 다시 맞춰집니다.</p>
 
-    <h2 id="example">연습용 템플릿</h2>
-    <div class="card">
-      <div class="label">이름</div>
-      <p style="margin-top:0"><b>흉부 CT</b></p>
-      <div class="label">내용</div>
-      <div class="template">Size: <span class="slot">{1:}</span> cm
-Side: <span class="choice"><span class="mark">≪</span>Rt<span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span>Lt<span class="mark">≫</span></span>
-FINDINGS:
-<span class="slot">[2:]</span></div>
+    <h2>선택지 만드는 세 가지 방법</h2>
+    <div class="cards">
+      <article class="card">
+        <h3>① 둘 중 하나 고르기</h3>
+        <div class="template">Side: <span class="choice"><span class="mark">≪</span><span class="slot">{1:Rt}</span><span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span><span class="slot">{2:Lt}</span><span class="mark">≫</span></span></div>
+        <p class="meaning">칸 안에 미리 <b>Rt</b>, <b>Lt</b> 를 적어 둡니다. “1번” 이라고만 말하면 Rt 가 남고 Lt 는 사라집니다. 뒤에 다른 말을 붙일 필요가 없습니다.</p>
+        <div class="row">
+          <div><div class="label">말하면</div><div class="say-box">1번</div></div>
+          <div class="arrow">→</div>
+          <div><div class="label">결과</div><div class="result">Side: Rt</div></div>
+        </div>
+      </article>
+      <article class="card">
+        <h3>② 값이 있을 때만 남기는 줄</h3>
+        <div class="template"><span class="choice"><span class="mark">≪</span>Joint effusion : <span class="slot">{3:}</span> ml<span class="mark">≫</span></span></div>
+        <p class="meaning">“3번” 하고 값을 말하면 줄이 남습니다. 3번을 부르지 않으면 <b>줄 전체가 사라집니다.</b> 있을 수도 없을 수도 있는 소견에 씁니다.</p>
+        <div class="row">
+          <div><div class="label">말하면</div><div class="say-box">3번 5</div></div>
+          <div class="arrow">→</div>
+          <div><div class="label">결과</div><div class="result">Joint effusion : 5 ml</div></div>
+        </div>
+      </article>
+      <article class="card">
+        <h3>③ 정해진 문장 그대로 남기기</h3>
+        <div class="template"><span class="choice"><span class="mark">≪</span><span class="slot">[4:No joint effusion.]</span><span class="mark">≫</span></span></div>
+        <p class="meaning">문장을 칸 안에 미리 써 둡니다. “4번” 이라고만 말하면 그 문장이 그대로 남습니다. 정상 소견 문장에 딱 맞습니다.</p>
+        <div class="row">
+          <div><div class="label">말하면</div><div class="say-box">4번</div></div>
+          <div class="arrow">→</div>
+          <div><div class="label">결과</div><div class="result">No joint effusion.</div></div>
+        </div>
+      </article>
+    </div>
+    <div class="warn">
+      <b>이렇게 만들면 안 됩니다</b><br>
+      <span class="choice"><span class="mark">≪</span>Rt<span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span>Lt<span class="mark">≫</span></span> 처럼 안에 번호 칸이 없으면 고를 방법이 없어서 <b>둘 다 사라집니다.</b>
+      선택지 하나마다 번호 칸을 하나씩 넣어 주세요.
     </div>
 
-    <h2>말로 채우는 순서</h2>
+    <h2 id="example">연습용 템플릿 · KNEE US</h2>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="label">이름</div>
+          <p style="margin-top:0"><b>KNEE US</b></p>
+        </div>
+        <button class="btn small" id="copyTemplate" type="button">내용 복사하기</button>
+      </div>
+      <div class="label">내용</div>
+      <div class="template" id="templateBody">US OF KNEE : <span class="choice"><span class="mark">≪</span><span class="slot">{1:Rt}</span><span class="mark">≫</span></span> <span class="choice"><span class="mark">≪</span><span class="slot">{2:Lt}</span><span class="mark">≫</span></span>
+
+<span class="choice"><span class="mark">≪</span>Joint effusion : <span class="slot">{3:}</span> ml<span class="mark">≫</span></span>
+<span class="choice"><span class="mark">≪</span><span class="slot">[4:No joint effusion.]</span><span class="mark">≫</span></span>
+<span class="choice"><span class="mark">≪</span>Baker's cyst : <span class="slot">{5:}</span> cm<span class="mark">≫</span></span>
+<span class="choice"><span class="mark">≪</span><span class="slot">[6:No Baker's cyst.]</span><span class="mark">≫</span></span>
+
+IMPRESSION :
+<span class="slot">[7:]</span></div>
+      <p class="meaning">
+        1·2번은 좌우 중 하나, 3·4번은 관절액 “있음 / 없음” 중 하나, 5·6번은 베이커 낭종 “있음 / 없음” 중 하나입니다.
+        앱의 <b>템플릿</b> 화면에서 이름을 <b>KNEE US</b> 로 하고 위 내용을 붙여 넣으면 똑같이 만들 수 있습니다.
+      </p>
+    </div>
+
+    <h2 id="steps">말로 채우는 순서 · 오른쪽 무릎, 관절액 5 ml</h2>
+    <p class="meaning">한 줄씩 말하고, 화면이 바뀐 뒤 다음 줄을 말하세요. 선택된 부분은 화면에서 <span class="picked">초록색</span>으로 바뀝니다.</p>
 
     <div class="step">
       <span class="num">1</span>
       <div>
         <h3>템플릿 부르기</h3>
-        <p class="say">“흉부 CT 템플릿”</p>
+        <p class="say">“KNEE US 템플릿”</p>
         <div class="row">
           <div>
             <div class="label">말하면</div>
-            <div class="say-box">흉부 CT 템플릿</div>
+            <div class="say-box">KNEE US 템플릿</div>
           </div>
           <div class="arrow">→</div>
           <div>
             <div class="label">화면에 나타남</div>
-            <div class="result">Size: {1:} cm
-Side: ≪Rt≫ ≪Lt≫
-FINDINGS:
-[2:]</div>
+            <div class="result">US OF KNEE : ≪{1:Rt}≫ ≪{2:Lt}≫
+
+≪Joint effusion : {3:} ml≫
+≪[4:No joint effusion.]≫
+≪Baker's cyst : {5:} cm≫
+≪[6:No Baker's cyst.]≫
+
+IMPRESSION :
+[7:]</div>
           </div>
         </div>
-        <p class="meaning">아직 빈칸입니다. 이제 하나씩 채웁니다.</p>
+        <p class="meaning">아직 아무것도 고르지 않은 상태입니다. 이제 번호를 부릅니다.</p>
       </div>
     </div>
 
     <div class="step">
       <span class="num">2</span>
       <div>
-        <h3>짧은 값 넣기 · {1:}</h3>
-        <p class="say">“1번” 그다음 “이 점 오”</p>
+        <h3>오른쪽 고르기 · 1번</h3>
+        <p class="say">“1번”</p>
         <div class="row">
           <div>
             <div class="label">말하면</div>
-            <div class="say-box">1번
-이 점 오</div>
+            <div class="say-box">1번</div>
           </div>
           <div class="arrow">→</div>
           <div>
-            <div class="label">결과</div>
-            <div class="result">Size: 2.5 cm
-Side: ≪Rt≫ ≪Lt≫
-FINDINGS:
-[2:]</div>
+            <div class="label">화면</div>
+            <div class="result">US OF KNEE : <span class="picked">≪{1:Rt}≫</span> ≪{2:Lt}≫
+
+≪Joint effusion : {3:} ml≫
+≪[4:No joint effusion.]≫
+≪Baker's cyst : {5:} cm≫
+≪[6:No Baker's cyst.]≫
+
+IMPRESSION :
+[7:]</div>
           </div>
         </div>
-        <p class="meaning">cm 는 그대로 있고, 숫자만 들어갑니다.</p>
+        <p class="meaning">“1번” 뒤에 다른 말은 하지 않습니다. Rt 는 이미 들어 있으니 초록색으로 바뀐 것만 확인하고 다음 번호로 넘어갑니다. 왼쪽이면 “2번” 입니다.</p>
       </div>
     </div>
 
     <div class="step">
       <span class="num">3</span>
       <div>
-        <h3>하나만 고르기 · 선택 표시</h3>
-        <p class="say">“Rt”</p>
+        <h3>관절액 값 넣기 · 3번</h3>
+        <p class="say">“3번” 그다음 “5”</p>
         <div class="row">
           <div>
             <div class="label">말하면</div>
-            <div class="say-box">Rt</div>
+            <div class="say-box">3번
+5</div>
           </div>
           <div class="arrow">→</div>
           <div>
-            <div class="label">결과</div>
-            <div class="result">Size: 2.5 cm
-Side: Rt
-FINDINGS:
-[2:]</div>
+            <div class="label">화면</div>
+            <div class="result">US OF KNEE : <span class="picked">≪{1:Rt}≫</span> ≪{2:Lt}≫
+
+<span class="picked">≪Joint effusion : {3:5} ml≫</span>
+≪[4:No joint effusion.]≫
+≪Baker's cyst : {5:} cm≫
+≪[6:No Baker's cyst.]≫
+
+IMPRESSION :
+[7:]</div>
           </div>
         </div>
-        <p class="meaning">왼쪽이면 “Lt” 라고 말하면 됩니다. 고르지 않은 쪽은 사라집니다.</p>
+        <p class="meaning">숫자는 평소처럼 “오” 라고 말하면 됩니다. ml 는 그대로 있고 숫자만 들어갑니다. 4번(No joint effusion.)은 부르지 않았으니 나중에 사라집니다.</p>
       </div>
     </div>
 
     <div class="step">
       <span class="num">4</span>
       <div>
-        <h3>문장 넣기 · [2:]</h3>
-        <p class="say">“2번” 그다음 “no pleural effusion”</p>
+        <h3>베이커 낭종 없음 · 6번</h3>
+        <p class="say">“6번”</p>
         <div class="row">
           <div>
             <div class="label">말하면</div>
-            <div class="say-box">2번
-no pleural effusion</div>
+            <div class="say-box">6번</div>
           </div>
           <div class="arrow">→</div>
           <div>
-            <div class="label">결과</div>
-            <div class="result">Size: 2.5 cm
-Side: Rt
-FINDINGS:
-No pleural effusion</div>
+            <div class="label">화면</div>
+            <div class="result">US OF KNEE : <span class="picked">≪{1:Rt}≫</span> ≪{2:Lt}≫
+
+<span class="picked">≪Joint effusion : {3:5} ml≫</span>
+≪[4:No joint effusion.]≫
+≪Baker's cyst : {5:} cm≫
+<span class="picked">≪[6:No Baker's cyst.]≫</span>
+
+IMPRESSION :
+[7:]</div>
           </div>
         </div>
-        <p class="meaning">문장용 칸이라, 영어는 첫 글자가 대문자가 됩니다.</p>
+        <p class="meaning">문장이 이미 들어 있으니 “6번” 만 말하면 됩니다. 낭종이 있었다면 “5번” 하고 크기를 말합니다.</p>
       </div>
     </div>
 
     <div class="step">
       <span class="num">5</span>
       <div>
-        <h3>끝내기</h3>
-        <p class="say">“템플릿 종료”</p>
-        <p class="meaning">빈칸 표시가 정리되고, 완성된 글만 남습니다.</p>
-        <div class="result">Size: 2.5 cm
-Side: Rt
-FINDINGS:
-No pleural effusion</div>
+        <h3>결론 문장 넣기 · 7번</h3>
+        <p class="say">“7번” 그다음 “small joint effusion”</p>
+        <div class="row">
+          <div>
+            <div class="label">말하면</div>
+            <div class="say-box">7번
+small joint effusion</div>
+          </div>
+          <div class="arrow">→</div>
+          <div>
+            <div class="label">화면</div>
+            <div class="result">US OF KNEE : <span class="picked">≪{1:Rt}≫</span> ≪{2:Lt}≫
+
+<span class="picked">≪Joint effusion : {3:5} ml≫</span>
+≪[4:No joint effusion.]≫
+≪Baker's cyst : {5:} cm≫
+<span class="picked">≪[6:No Baker's cyst.]≫</span>
+
+IMPRESSION :
+[7:Small joint effusion]</div>
+          </div>
+        </div>
+        <p class="meaning">문장용 칸이라 영어 첫 글자가 대문자가 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="num">6</span>
+      <div>
+        <h3>녹음 멈추고 붙이기</h3>
+        <p class="say">녹음 정지 → 붙이기 단축키 (기본 Page Up)</p>
+        <p class="meaning">붙일 때 표시가 모두 정리됩니다. 초록색 선택지는 내용만 남고, 부르지 않은 선택지(<span class="gone">Lt</span>, <span class="gone">No joint effusion.</span>, <span class="gone">Baker's cyst : cm</span>)는 줄까지 사라집니다.</p>
+        <div class="label">EMR 에 들어가는 최종 결과</div>
+        <div class="result">US OF KNEE : Rt
+
+Joint effusion : 5 ml
+No Baker's cyst.
+
+IMPRESSION :
+Small joint effusion</div>
       </div>
     </div>
 
     <h2>한 번에 이어서 말하기</h2>
     <div class="script">
-      <div class="label" style="color:#8fd0d6">그대로 따라 말해 보세요</div>
+      <div class="label" style="color:#8fd0d6">오른쪽 무릎 · 관절액 5 ml · 낭종 없음</div>
       <ol>
-        <li><span class="say">흉부 CT 템플릿</span></li>
-        <li><span class="say">1번</span> 이 점 오</li>
-        <li><span class="say">Rt</span></li>
-        <li><span class="say">2번</span> no pleural effusion</li>
-        <li><span class="say">템플릿 종료</span></li>
+        <li><span class="say">KNEE US 템플릿</span></li>
+        <li><span class="say">1번</span></li>
+        <li><span class="say">3번</span> 5</li>
+        <li><span class="say">6번</span></li>
+        <li><span class="say">7번</span> small joint effusion</li>
+        <li>녹음 정지 → 붙이기 단축키</li>
       </ol>
+      <div class="label" style="color:#8fd0d6; margin-top:18px">왼쪽 무릎 · 모두 정상</div>
+      <ol>
+        <li><span class="say">KNEE US 템플릿</span></li>
+        <li><span class="say">2번</span></li>
+        <li><span class="say">4번</span></li>
+        <li><span class="say">6번</span></li>
+        <li><span class="say">7번</span> no remarkable finding</li>
+        <li>녹음 정지 → 붙이기 단축키</li>
+      </ol>
+      <div class="result">US OF KNEE : Lt
+
+No joint effusion.
+No Baker's cyst.
+
+IMPRESSION :
+No remarkable finding</div>
     </div>
 
     <h2>이것만 기억하세요</h2>
     <div class="remember">
       <div><b>{1:}</b> → “1번” 하고 짧은 값만 말하기</div>
       <div><b>[2:]</b> → “2번” 하고 문장 말하기</div>
-      <div><b>≪Rt≫ ≪Lt≫</b> → 고르고 싶은 단어만 말하기</div>
+      <div><b>≪{1:Rt}≫ ≪{2:Lt}≫</b> → 남길 쪽의 번호만 부르기. 부르지 않은 선택지는 사라집니다</div>
+      <div><b>선택지 안에는 번호 칸이 꼭 하나</b> → 번호 칸이 없는 선택지는 고를 수 없습니다</div>
+    </div>
+
+    <h2>자주 생기는 문제</h2>
+    <div class="faq">
+      <details>
+        <summary>붙였는데 선택지가 전부 사라졌어요</summary>
+        <p>선택지 안의 번호를 부르지 않았거나, 선택지 안에 번호 칸이 없는 템플릿입니다. 화면에서 선택지가 초록색으로 바뀌었는지 먼저 확인하세요. 초록색이 안 되면 그 선택지는 붙일 때 사라집니다.</p>
+      </details>
+      <details>
+        <summary>Rt 와 Lt 가 둘 다 남았어요</summary>
+        <p>“1번” 과 “2번” 을 둘 다 불렀기 때문입니다. 한 번 초록색이 된 선택지는 그대로 남으니, 잘못 골랐으면 지우기 버튼으로 비우고 템플릿을 다시 부르세요.</p>
+      </details>
+      <details>
+        <summary>번호를 불렀는데 값이 옆 칸에 들어갔어요</summary>
+        <p>번호와 값 사이를 조금 띄어 말하세요. “3번” 하고 화면의 커서가 그 칸으로 옮겨진 뒤에 값을 말하면 정확히 들어갑니다.</p>
+      </details>
+      <details>
+        <summary>“US OF KNEE :  Lt” 처럼 빈칸이 두 개 보여요</summary>
+        <p>앞쪽 선택지(Rt)가 지워지면서 남은 빈칸입니다. 내용에는 문제가 없고, EMR 에서 그대로 두어도 됩니다.</p>
+      </details>
     </div>
 
     <footer>
@@ -454,20 +662,33 @@ No pleural effusion</div>
   </main>
 
   <script>
-    const button = document.getElementById("copyLink");
-    button.addEventListener("click", async () => {
-      const url = window.location.href;
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch (error) {
-        window.prompt("이 링크를 복사하세요", url);
-      }
-      button.textContent = "복사했습니다";
+    const flash = (button, doneText, idleText) => {
+      button.textContent = doneText;
       button.classList.add("copied");
       window.setTimeout(() => {
-        button.textContent = "이 링크 복사하기";
+        button.textContent = idleText;
         button.classList.remove("copied");
       }, 1600);
+    };
+    const copyText = async (text, promptText) => {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (error) {
+        window.prompt(promptText, text);
+      }
+    };
+
+    const linkButton = document.getElementById("copyLink");
+    linkButton.addEventListener("click", async () => {
+      await copyText(window.location.href, "이 링크를 복사하세요");
+      flash(linkButton, "복사했습니다", "이 링크 복사하기");
+    });
+
+    const templateButton = document.getElementById("copyTemplate");
+    templateButton.addEventListener("click", async () => {
+      const body = document.getElementById("templateBody").textContent;
+      await copyText(body, "템플릿 내용을 복사하세요");
+      flash(templateButton, "복사했습니다", "내용 복사하기");
     });
   </script>
 </body>
